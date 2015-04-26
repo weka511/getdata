@@ -17,7 +17,7 @@ read.dataset<-function(mode,features,data_directory="data",base_file_name="UCI H
   #   base_file_name: The directory into which the zipfile has been expanded
   #
   # Returns:
-  #   A list containg X, y, and subject
+  #   Frame containing subjects, activities, measurements
   
   # Error handling
   if(!file.exists(data_directory)) 
@@ -36,18 +36,49 @@ read.dataset<-function(mode,features,data_directory="data",base_file_name="UCI H
   return (cbind(subject,y,X))
 }
 
-#1. Merges the training and the test sets to create one data set.
+merge.training.test<-function(features){
+  # Read the training and the test sets, then merge them to create one data set.
+  #
+  # Args:
+  #   features: List of feature names
+  #
+  # Returns: subject, Ys, meanurements
+  #   
+  all<-rbind(read.dataset("test",features),read.dataset("train",features))
+}
+
+extract.means.sigma<-function(all){
+  # Extracts only the measurements on the mean and standard deviation for each measurement.
+  #
+  # Args:
+  #   
+  #
+  # Returns: Subject, activity, and the measurements names "....mean..." or "..std.."
+  #
+  all_names<-names(all)
+  keeps<-grep("(subject)|(activity)|(.*((mean)|(std)).*)",all_names)
+  all[,keeps]
+}
 
 
-features=read.features()
+# 
+#
+# Args:
+#   
+#
+# Returns:
+#   
 
-test<-read.dataset("test",features)
-
-train<-read.dataset("train",features)
-
-
-#2. Extracts only the measurements on the mean and standard deviation for each measurement. 
 #3. Uses descriptive activity names to name the activities in the data set
 #4. Appropriately labels the data set with descriptive variable names. 
 #5. From the data set in step 4, creates a second, independent tidy data set with the average of each variable
 #   for each activity and each subject.
+
+features=read.features()
+
+#1.Merges the training and the test sets to create one data set.
+
+merged<-merge.training.test(features)
+
+#2. Extracts only the measurements on the mean and standard deviation for each measurement. 
+extracted<-extract.means.sigma(merged)
