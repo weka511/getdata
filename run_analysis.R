@@ -21,7 +21,7 @@ rm(list=ls())
 library(data.table)
 
 
-read.features<-function(data_directory="data",base_file_name="UCI HAR Dataset") {
+read.features<-function(data.directory="data",base.file.name="UCI HAR Dataset") {
   # 
   #
   # Args:
@@ -29,12 +29,12 @@ read.features<-function(data_directory="data",base_file_name="UCI HAR Dataset") 
   #
   # Returns:
   #   
-  features<-read.table(file.path(data_directory,base_file_name,"features.txt"))
+  features<-read.table(file.path(data.directory,base.file.name,"features.txt"))
   setnames(features,names(features),c("pos","Feature Name"))
   return (as.vector(features[,2]))
 }
 
-read.activities<-function(data_directory="data",base_file_name="UCI HAR Dataset") {
+read.activities<-function(data.directory="data",base.file.name="UCI HAR Dataset") {
   # 
   #
   # Args:
@@ -42,37 +42,37 @@ read.activities<-function(data_directory="data",base_file_name="UCI HAR Dataset"
   #
   # Returns:
   #   
-  activities<-read.table(file.path(data_directory,base_file_name,"activity_labels.txt"))
+  activities<-read.table(file.path(data.directory,base.file.name,"activity_labels.txt"))
   setnames(activities,names(activities),c("activity","ActivityName"))
   activities
 }
 
 
 
-read.dataset<-function(mode,features,data_directory="data",base_file_name="UCI HAR Dataset"){
+read.dataset<-function(mode,features,data.directory="data",base.file.name="UCI HAR Dataset"){
   # Read the test dataset or training datset
   #
   # Args:
   #   mode: Specified which dataset to load, either "test" or "train"
-  #   data_directory: The directory from which data will be loaded
-  #   base_file_name: The directory into which the zipfile has been expanded
+  #   data.directory: The directory from which data will be loaded
+  #   base.file.name: The directory into which the zipfile has been expanded
   #
   # Returns:
   #   Frame containing subjects, activities, measurements
   
   # Error handling
-  if(!file.exists(data_directory)) 
+  if(!file.exists(data.directory)) 
     stop(paste("Data directory '",
-               data_directory,
+               data.directory,
                "' does not exist. Run download_data.R.\n",
                "NB Make sure both scripts are pointing at the same directory",
                sep=""))
   
-  X=read.table(file.path(data_directory,base_file_name,mode,paste("X_",mode,".txt",sep="")))
+  X=read.table(file.path(data.directory,base.file.name,mode,paste("X_",mode,".txt",sep="")))
   setnames(X,names(X),features)
-  y=read.table(file.path(data_directory,base_file_name,mode,paste("y_",mode,".txt",sep="")))
+  y=read.table(file.path(data.directory,base.file.name,mode,paste("y_",mode,".txt",sep="")))
   setnames(y,names(y),"activity")
-  subject=read.table(file.path(data_directory,base_file_name,mode,paste("subject_",mode,".txt",sep="")))
+  subject=read.table(file.path(data.directory,base.file.name,mode,paste("subject_",mode,".txt",sep="")))
   setnames(subject,names(subject),"subject")
   return (cbind(subject,y,X))
 }
@@ -109,14 +109,14 @@ use.descriptive.activity.names<-function (extracted,activities) {
   #
   # Returns:
   #
-  extracted_with_activities<-merge(extracted,activities,by=c("activity"))
-  seq<-order(extracted_with_activities[,1],extracted_with_activities[,2])
-  selector<-1:length(extracted_with_activities)-1
+  result<-merge(extracted,activities,by=c("activity"))
+  seq<-order(result[,1],result[,2])
+  selector<-1:length(result)-1
   selector[1]<-2
-  selector[2]=length(extracted_with_activities)
-  extracted_with_activities<-extracted_with_activities[seq,selector]
-  extracted_with_activities$subject.1<-NULL
-  extracted_with_activities
+  selector[2]=length(result)
+  result<-result[seq,selector]
+  result$subject.1<-NULL
+  result
 }
 
 # 
@@ -168,7 +168,7 @@ createTidyDataSet<-function(dataset){
   # Returns:
   #
 
-  fields<-names(dataset_with_activities)
+  fields<-names(dataset)
   fields<-fields[3:length(fields)]
   subjects<-unique(dataset[,1])
   activities<-unique(dataset[,2])
@@ -208,12 +208,12 @@ extracted<-extract.means.sigma(merged)
 #3. Uses descriptive activity names to name the activities in the data set
 #4. Appropriately labels the data set with descriptive variable names. 
 activities<-read.activities()
-dataset_with_activities<-use.descriptive.activity.names(extracted,activities)
+dataset<-use.descriptive.activity.names(extracted,activities)
 
 
 #5. From the data set in step 4, creates a second, independent tidy data set with the average of each variable
 #   for each activity and each subject.
 
-tidy_dataset<-createTidyDataSet(dataset_with_activities)
+tidy.dataset<-createTidyDataSet(dataset)
 
-write.table(tidy_dataset,file.path("./data","tidied_data.txt"))
+write.table(tidy.dataset,file.path("./data","tidied_data.txt"))
