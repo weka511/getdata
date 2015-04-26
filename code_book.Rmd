@@ -5,14 +5,35 @@ date: "Monday, April 27, 2015"
 output: html_document
 ---
 
+# Code book for Tidy Dataset
+
+This is based on *Human Activity Recognition Using Smartphones Dataset*
+
+[1] Davide Anguita, Alessandro Ghio, Luca Oneto, Xavier Parra and Jorge L. Reyes-Ortiz. Human Activity Recognition on Smartphones using a Multiclass Hardware-Friendly Support Vector Machine. International Workshop of Ambient Assisted Living (IWAAL 2012). Vitoria-Gasteiz, Spain. Dec 2012
+[2] The datset, *UCI HAR Dataset*, is distributed with a README.txt that describes the data.
+[3] Each activity has a code number, which is defined in activity_labels.txt 
+[4] There is a list of feature names in features.txt
+
+## Fields
+
  * subject
     *  Identifies subject of experiment
     
  * ActivityName
-    * One of the activities defined in activity_labels.txt
+    * One of the activities defined in [3]
     
  * field
-    * One of the measurement types defined in  features_info.txt
+    * One of the measurement types defined in [4]
+    * We have restricted our features to measuments of mean and standard deviation. The allowable field values are those whose name includes 'mean' or 'std'
     
  * average
     * Average of all measurements for tuple (Subject, ActivityName, field)
+    * These values are normalized to the range [-1,1], since this is true of the original dataset.
+
+## Method of creation
+
+This dataset was prepared by two scripts:
+
+  * [downloading data](https://github.com/weka511/getdata/blob/master/download_data.R)
+  
+  * [analysis and tidying](https://github.com/weka511/getdata/blob/master/run_analysis.R)

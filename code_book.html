@@ -58,6 +58,12 @@ if (window.hljs && document.readyState && document.readyState === "complete") {
 </div>
 
 
+<div id="code-book-for-tidy-dataset" class="section level1">
+<h1>Code book for Tidy Dataset</h1>
+<p>This is based on <em>Human Activity Recognition Using Smartphones Dataset</em></p>
+<p>[1] Davide Anguita, Alessandro Ghio, Luca Oneto, Xavier Parra and Jorge L. Reyes-Ortiz. Human Activity Recognition on Smartphones using a Multiclass Hardware-Friendly Support Vector Machine. International Workshop of Ambient Assisted Living (IWAAL 2012). Vitoria-Gasteiz, Spain. Dec 2012 [2] The datset, <em>UCI HAR Dataset</em>, is distributed with a README.txt that describes the data. [3] Each activity has a code number, which is defined in activity_labels.txt [4] There is a list of feature names in features.txt</p>
+<div id="fields" class="section level2">
+<h2>Fields</h2>
 <ul>
 <li>subject
 <ul>
@@ -65,17 +71,29 @@ if (window.hljs && document.readyState && document.readyState === "complete") {
 </ul></li>
 <li>ActivityName
 <ul>
-<li>One of the activities defined in activity_labels.txt</li>
+<li>One of the activities defined in [3]</li>
 </ul></li>
 <li>field
 <ul>
-<li>One of the measurement types defined in features_info.txt</li>
+<li>One of the measurement types defined in [4]</li>
+<li>We have restricted our features to measuments of mean and standard deviation. The allowable field values are those whose name includes ‘mean’ or ‘std’</li>
 </ul></li>
 <li>average
 <ul>
 <li>Average of all measurements for tuple (Subject, ActivityName, field)</li>
+<li>These values are normalized to the range [-1,1], since this is true of the original dataset.</li>
 </ul></li>
 </ul>
+</div>
+<div id="method-of-creation" class="section level2">
+<h2>Method of creation</h2>
+<p>This dataset was prepared by two scripts:</p>
+<ul>
+<li><p><a href="https://github.com/weka511/getdata/blob/master/download_data.R">downloading data</a></p></li>
+<li><p><a href="https://github.com/weka511/getdata/blob/master/run_analysis.R">analysis and tidying</a></p></li>
+</ul>
+</div>
+</div>
 
 
 </div>
