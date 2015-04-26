@@ -1,0 +1,18 @@
+---
+title: "Code Book for Course Project 'Getting and Cleaning Data'"
+author: "weka511"
+date: "Monday, April 27, 2015"
+output: html_document
+---
+
+ * subject
+    *  Identifies subject of experiment
+    
+ * ActivityName
+    * One of the activities defined in activity_labels.txt
+    
+ * field
+    * One of the measurement types defined in  features_info.txt
+    
+ * average
+    * Average of all measurements for tuple (Subject, ActivityName, field)

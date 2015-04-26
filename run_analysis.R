@@ -260,3 +260,6 @@ activities<-read.activities()
 labelled.dataset<-use.descriptive.activity.names(averaged.dataset,activities)
 
 write.table(labelled.dataset,file.path("./data","tidied_data.txt"),row.names=FALSE)
+
+# You can read this back with
+#   test.read<-read.table(file.path("./data","tidied_data.txt"),header=TRUE)
