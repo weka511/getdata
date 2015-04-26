@@ -16,6 +16,8 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
+# TODO: Pull the data.directory variable up to the top level
+
 rm(list=ls())
 
 library(data.table)
@@ -119,47 +121,50 @@ use.descriptive.activity.names<-function (extracted,activities) {
   result
 }
 
-# 
-#
-# Args:
-#   
-#
-# Returns:
-#   
-calculateOneAverage<-function(activity,subject,field,dataset) {
-  average<-mean(dataset[dataset$subject==subject & dataset$ActivityName==activity,field])
+
+calculate.one.average<-function(activity,subject,field,dataset) {
+  # 
+  #
+  # Args:
+  #   
+  #
+  # Returns:
+  #   
+  average<-mean(dataset[dataset$subject==subject & dataset$activity==activity,field])
   cbind(activity,subject,field,average)
 }
 
-# 
-#
-# Args:
-#   
-#
-# Returns:
-#   
-calculateForActivitiesInSubject<- function(subject,activities,field,dataset){
-  result<-calculateOneAverage(activities[1],subject,field,dataset)
+
+calculate.for.activities.in.subject<- function(subject,activities,field,dataset){
+  # 
+  #
+  # Args:
+  #   
+  #
+  # Returns:
+  #   
+  result<-calculate.one.average(activities[1],subject,field,dataset)
   for (i in 2:length(activities))
-    result<-rbind(result,calculateOneAverage(activities[i],subject,field,dataset))
+    result<-rbind(result,calculate.one.average(activities[i],subject,field,dataset))
   result
 }
 
-# 
-#
-# Args:
-#   
-#
-# Returns:
-#   
-calculateForOneField<-function(subjects,activities,field,dataset){
-  result<-calculateForActivitiesInSubject(subjects[1],activities,field,dataset)
+
+calculate.for.one.field<-function(subjects,activities,field,dataset){
+  # 
+  #
+  # Args:
+  #   
+  #
+  # Returns:
+  #   
+  result<-calculate.for.activities.in.subject(subjects[1],activities,field,dataset)
   for (i in 2:length(subjects))
-    result<-rbind(result,calculateForActivitiesInSubject(subjects[i],activities,field,dataset))
+    result<-rbind(result,calculate.for.activities.in.subject(subjects[i],activities,field,dataset))
   result
 }
 
-createTidyDataSet<-function(dataset){
+create.dataset.with.averages<-function(dataset){
   # 
   #
   # Args:
@@ -167,16 +172,15 @@ createTidyDataSet<-function(dataset){
   #
   # Returns:
   #
-
   fields<-names(dataset)
   fields<-fields[3:length(fields)]
   subjects<-unique(dataset[,1])
   activities<-unique(dataset[,2])
   
-  result<-calculateForOneField(subjects,activities,fields[1],dataset)
+  result<-calculate.for.one.field(subjects,activities,fields[1],dataset)
   
   for (i in 2:length(fields))
-    result<-rbind(result,calculateForOneField(subjects,activities,fields[i],dataset))
+    result<-rbind(result,calculate.for.one.field(subjects,activities,fields[i],dataset))
   
   result
 }
@@ -207,13 +211,15 @@ extracted<-extract.means.sigma(merged)
 
 #3. Uses descriptive activity names to name the activities in the data set
 #4. Appropriately labels the data set with descriptive variable names. 
-activities<-read.activities()
-dataset<-use.descriptive.activity.names(extracted,activities)
+#activities<-read.activities()
+#dataset<-use.descriptive.activity.names(extracted,activities)
 
 
 #5. From the data set in step 4, creates a second, independent tidy data set with the average of each variable
 #   for each activity and each subject.
 
-tidy.dataset<-createTidyDataSet(dataset)
+averaged.dataset<-create.dataset.with.averages(extracted)
 
-write.table(tidy.dataset,file.path("./data","tidied_data.txt"))
+labelled.dataset<-use.descriptive.activity.names(averaged.dataset,activities)
+
+write.table(labelled.dataset,file.path("./data","tidied_data.txt"),row.names=FALSE)
