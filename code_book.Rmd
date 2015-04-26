@@ -14,6 +14,9 @@ This is based on *Human Activity Recognition Using Smartphones Dataset*
 [3] Each activity has a code number, which is defined in activity_labels.txt 
 [4] There is a list of feature names in features.txt
 
+## Structure
+ I have chosen the narrow representation. Each row contains on measurment, and the key is the combination of the subject, activity name, and field.
+ 
 ## Fields
 
  * subject
@@ -34,6 +37,6 @@ This is based on *Human Activity Recognition Using Smartphones Dataset*
 
 This dataset was prepared by two scripts:
 
-  * [downloading data](https://github.com/weka511/getdata/blob/master/download_data.R)
+  * [downloading data](https://github.com/weka511/getdata/blob/master/download_data.R), which downloads the dataset and unzips it.
   
-  * [analysis and tidying](https://github.com/weka511/getdata/blob/master/run_analysis.R)
+  * [analysis and tidying](https://github.com/weka511/getdata/blob/master/run_analysis.R), which performs the [analysis specified for the project](https://class.coursera.org/getdata-013/human_grading) and saves the file.

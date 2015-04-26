@@ -62,6 +62,10 @@ if (window.hljs && document.readyState && document.readyState === "complete") {
 <h1>Code book for Tidy Dataset</h1>
 <p>This is based on <em>Human Activity Recognition Using Smartphones Dataset</em></p>
 <p>[1] Davide Anguita, Alessandro Ghio, Luca Oneto, Xavier Parra and Jorge L. Reyes-Ortiz. Human Activity Recognition on Smartphones using a Multiclass Hardware-Friendly Support Vector Machine. International Workshop of Ambient Assisted Living (IWAAL 2012). Vitoria-Gasteiz, Spain. Dec 2012 [2] The datset, <em>UCI HAR Dataset</em>, is distributed with a README.txt that describes the data. [3] Each activity has a code number, which is defined in activity_labels.txt [4] There is a list of feature names in features.txt</p>
+<div id="structure" class="section level2">
+<h2>Structure</h2>
+<p>I have chosen the narrow representation. Each row contains on measurment, and the key is the combination of the subject, activity name, and field.</p>
+</div>
 <div id="fields" class="section level2">
 <h2>Fields</h2>
 <ul>
@@ -89,8 +93,8 @@ if (window.hljs && document.readyState && document.readyState === "complete") {
 <h2>Method of creation</h2>
 <p>This dataset was prepared by two scripts:</p>
 <ul>
-<li><p><a href="https://github.com/weka511/getdata/blob/master/download_data.R">downloading data</a></p></li>
-<li><p><a href="https://github.com/weka511/getdata/blob/master/run_analysis.R">analysis and tidying</a></p></li>
+<li><p><a href="https://github.com/weka511/getdata/blob/master/download_data.R">downloading data</a>, which downloads the dataset and unzips it.</p></li>
+<li><p><a href="https://github.com/weka511/getdata/blob/master/run_analysis.R">analysis and tidying</a>, which performs the <a href="https://class.coursera.org/getdata-013/human_grading">analysis specified for the project</a> and saves the file.</p></li>
 </ul>
 </div>
 </div>
