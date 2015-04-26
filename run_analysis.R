@@ -25,7 +25,7 @@ read.activities<-function(data_directory="data",base_file_name="UCI HAR Dataset"
   # Returns:
   #   
   activities<-read.table(file.path(data_directory,base_file_name="UCI HAR Dataset","activity_labels.txt"))
-  setnames(activities,names(activities),c("activity","Activity Name"))
+  setnames(activities,names(activities),c("activity","ActivityName"))
   activities
 }
 
@@ -84,6 +84,13 @@ extract.means.sigma<-function(all){
 }
 
 use.descriptive.activity.names<-function (extracted,activities) {
+  # 
+  #
+  # Args:
+  #   
+  #
+  # Returns:
+  #
   extracted_with_activities<-merge(extracted,activities,by=c("activity"))
   seq<-order(extracted_with_activities[,1],extracted_with_activities[,2])
   selector<-1:length(extracted_with_activities)-1
@@ -119,9 +126,21 @@ merged<-merge.training.test(features)
 extracted<-extract.means.sigma(merged)
 
 #3. Uses descriptive activity names to name the activities in the data set
+#4. Appropriately labels the data set with descriptive variable names. 
 activities<-read.activities()
 dataset_with_activities<-use.descriptive.activity.names(extracted,activities)
 
-#4. Appropriately labels the data set with descriptive variable names. 
+
 #5. From the data set in step 4, creates a second, independent tidy data set with the average of each variable
 #   for each activity and each subject.
+keys<-unique(dataset_with_activities[,1:2])
+fields<-names(dataset_with_activities)
+fields<-fields[3:length(fields)]
+f1<-function(field) {
+  lapply(keys,calculateOneAverage,field,dataset)
+  
+}
+calculateOneAverage<-function(key,field,dataset) {
+  dataset[dataset$subject==key[1] & dataset$ActivityName==key[2],field]
+}
+lapply(fields,f1,keys,dataset_with_activities)
