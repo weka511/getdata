@@ -1,3 +1,21 @@
+# Download and tidy Samsung data
+#
+# Copyright (C) 2015 "weka511"
+# 
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, write to the Free Software Foundation, Inc.,
+# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+
 rm(list=ls())
 
 library(data.table)
@@ -11,7 +29,7 @@ read.features<-function(data_directory="data",base_file_name="UCI HAR Dataset") 
   #
   # Returns:
   #   
-  features<-read.table(file.path(data_directory,base_file_name="UCI HAR Dataset","features.txt"))
+  features<-read.table(file.path(data_directory,base_file_name,"features.txt"))
   setnames(features,names(features),c("pos","Feature Name"))
   return (as.vector(features[,2]))
 }
@@ -24,7 +42,7 @@ read.activities<-function(data_directory="data",base_file_name="UCI HAR Dataset"
   #
   # Returns:
   #   
-  activities<-read.table(file.path(data_directory,base_file_name="UCI HAR Dataset","activity_labels.txt"))
+  activities<-read.table(file.path(data_directory,base_file_name,"activity_labels.txt"))
   setnames(activities,names(activities),c("activity","ActivityName"))
   activities
 }
@@ -108,6 +126,68 @@ use.descriptive.activity.names<-function (extracted,activities) {
 #
 # Returns:
 #   
+calculateOneAverage<-function(activity,subject,field,dataset) {
+  average<-mean(dataset[dataset$subject==subject & dataset$ActivityName==activity,field])
+  cbind(activity,subject,field,average)
+}
+
+# 
+#
+# Args:
+#   
+#
+# Returns:
+#   
+calculateForActivitiesInSubject<- function(subject,activities,field,dataset){
+  result<-calculateOneAverage(activities[1],subject,field,dataset)
+  for (i in 2:length(activities))
+    result<-rbind(result,calculateOneAverage(activities[i],subject,field,dataset))
+  result
+}
+
+# 
+#
+# Args:
+#   
+#
+# Returns:
+#   
+calculateForOneField<-function(subjects,activities,field,dataset){
+  result<-calculateForActivitiesInSubject(subjects[1],activities,field,dataset)
+  for (i in 2:length(subjects))
+    result<-rbind(result,calculateForActivitiesInSubject(subjects[i],activities,field,dataset))
+  result
+}
+
+createTidyDataSet<-function(dataset){
+  # 
+  #
+  # Args:
+  #   
+  #
+  # Returns:
+  #
+
+  fields<-names(dataset_with_activities)
+  fields<-fields[3:length(fields)]
+  subjects<-unique(dataset[,1])
+  activities<-unique(dataset[,2])
+  
+  result<-calculateForOneField(subjects,activities,fields[1],dataset)
+  
+  for (i in 2:length(fields))
+    result<-rbind(result,calculateForOneField(subjects,activities,fields[i],dataset))
+  
+  result
+}
+
+# 
+#
+# Args:
+#   
+#
+# Returns:
+#   
 
 #3. Uses descriptive activity names to name the activities in the data set
 activities<-read.activities()
@@ -133,14 +213,7 @@ dataset_with_activities<-use.descriptive.activity.names(extracted,activities)
 
 #5. From the data set in step 4, creates a second, independent tidy data set with the average of each variable
 #   for each activity and each subject.
-keys<-unique(dataset_with_activities[,1:2])
-fields<-names(dataset_with_activities)
-fields<-fields[3:length(fields)]
-f1<-function(field) {
-  lapply(keys,calculateOneAverage,field,dataset)
-  
-}
-calculateOneAverage<-function(key,field,dataset) {
-  dataset[dataset$subject==key[1] & dataset$ActivityName==key[2],field]
-}
-lapply(fields,f1,keys,dataset_with_activities)
+
+tidy_dataset<-createTidyDataSet(dataset_with_activities)
+
+write.table(tidy_dataset,file.path("./data","tidied_data.txt"))
