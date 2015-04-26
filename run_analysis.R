@@ -2,11 +2,34 @@ rm(list=ls())
 
 library(data.table)
 
+
 read.features<-function(data_directory="data",base_file_name="UCI HAR Dataset") {
+  # 
+  #
+  # Args:
+  #   
+  #
+  # Returns:
+  #   
   features<-read.table(file.path(data_directory,base_file_name="UCI HAR Dataset","features.txt"))
   setnames(features,names(features),c("pos","Feature Name"))
   return (as.vector(features[,2]))
 }
+
+read.activities<-function(data_directory="data",base_file_name="UCI HAR Dataset") {
+  # 
+  #
+  # Args:
+  #   
+  #
+  # Returns:
+  #   
+  activities<-read.table(file.path(data_directory,base_file_name="UCI HAR Dataset","activity_labels.txt"))
+  setnames(activities,names(activities),c("activity","Activity Name"))
+  activities
+}
+
+
 
 read.dataset<-function(mode,features,data_directory="data",base_file_name="UCI HAR Dataset"){
   # Read the test dataset or training datset
@@ -60,6 +83,16 @@ extract.means.sigma<-function(all){
   all[,keeps]
 }
 
+use.descriptive.activity.names<-function (extracted,activities) {
+  extracted_with_activities<-merge(extracted,activities,by=c("activity"))
+  seq<-order(extracted_with_activities[,1],extracted_with_activities[,2])
+  selector<-1:length(extracted_with_activities)-1
+  selector[1]<-2
+  selector[2]=length(extracted_with_activities)
+  extracted_with_activities<-extracted_with_activities[seq,selector]
+  extracted_with_activities$subject.1<-NULL
+  extracted_with_activities
+}
 
 # 
 #
@@ -70,6 +103,8 @@ extract.means.sigma<-function(all){
 #   
 
 #3. Uses descriptive activity names to name the activities in the data set
+activities<-read.activities()
+
 #4. Appropriately labels the data set with descriptive variable names. 
 #5. From the data set in step 4, creates a second, independent tidy data set with the average of each variable
 #   for each activity and each subject.
@@ -82,3 +117,11 @@ merged<-merge.training.test(features)
 
 #2. Extracts only the measurements on the mean and standard deviation for each measurement. 
 extracted<-extract.means.sigma(merged)
+
+#3. Uses descriptive activity names to name the activities in the data set
+activities<-read.activities()
+dataset_with_activities<-use.descriptive.activity.names(extracted,activities)
+
+#4. Appropriately labels the data set with descriptive variable names. 
+#5. From the data set in step 4, creates a second, independent tidy data set with the average of each variable
+#   for each activity and each subject.
