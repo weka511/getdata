@@ -1,5 +1,3 @@
-# Download and tidy Samsung data
-#
 # Copyright (C) 2015 "weka511"
 # 
 # This program is free software; you can redistribute it and/or modify
@@ -16,18 +14,26 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-rm(list=ls())
-data_directory<-"data"
+# Tidy Samsung data as specified in the course project for Getting & Cleaning Data
+# - https://class.coursera.org/getdata-013 
 
-if(!file.exists(data_directory))
-  dir.create(data_directory)
+rm(list=ls())
+
+# TODO: pull the next variable out into a separate source file so it can be shared with run_analysis.R
+data.directory<-"data"
+
+if(!file.exists(data.directory))
+  dir.create(data.directory)
+
+# TODO: pull the next variable out into a separate source file so it can be shared with run_analysis.R
 
 url<-"https://d396qusza40orc.cloudfront.net/getdata%2Fprojectfiles%2FUCI%20HAR%20Dataset.zip"
-base_file_name <- "UCI HAR Dataset"
-zip_file_name<-paste(base_file_name,".zip",sep="")
-full_zip_file_name<-file.path(data_directory,zip_file_name)
 
-download.file(url,destfile=full_zip_file_name,mode="wb")
+base.file.name <- "UCI HAR Dataset"
+zip.file.name<-paste(base.file.name,".zip",sep="")
+full.zip.file.name<-file.path(data.directory,zip.file.name)
 
-unzip(full_zip_file_name,exdir=data_directory)
+download.file(url,destfile=full.zip.file.name,mode="wb")
+
+unzip(full.zip.file.name,exdir=data.directory)
 

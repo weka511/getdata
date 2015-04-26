@@ -1,5 +1,3 @@
-# Download and tidy Samsung data
-#
 # Copyright (C) 2015 "weka511"
 # 
 # This program is free software; you can redistribute it and/or modify
@@ -16,7 +14,17 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
+# Tidy Samsung data as specified in the course project for Getting & Cleaning Data
+# - https://class.coursera.org/getdata-013 
+#
 # TODO: Pull the data.directory variable up to the top level
+# TODO: pull the data.directory and base.file.name variables out into a separate source file
+#       so they can be shared with download_data.R
+# TODO: Replace loops with one of the apply family
+
+# Gentle reader, you will find the controlling logic for this program near the bottom. Nearly all 
+# the code consists of functions that do the heavy lifting; the main program merely invokes them
+# in sequence. This way I can test the functions one at a time before tunning the whole thing.
 
 rm(list=ls())
 
@@ -24,12 +32,14 @@ library(data.table)
 
 
 read.features<-function(data.directory="data",base.file.name="UCI HAR Dataset") {
-  # 
+  # Read list of feature names from downloaded dataset. These are the name of the original measurements
   #
   # Args:
+  #      data.directory: identifies where dataset has been stored
+  #      base.file.name: sub-directory into which data has been unzipped
   #   
   #
-  # Returns:
+  # Returns: A vector of features
   #   
   features<-read.table(file.path(data.directory,base.file.name,"features.txt"))
   setnames(features,names(features),c("pos","Feature Name"))
@@ -37,12 +47,14 @@ read.features<-function(data.directory="data",base.file.name="UCI HAR Dataset") 
 }
 
 read.activities<-function(data.directory="data",base.file.name="UCI HAR Dataset") {
-  # 
+  # Read activity numbers and names from dataset
   #
   # Args:
+  #      data.directory: identifies where dataset has been stored
+  #      base.file.name: sub-directory into which data has been unzipped
   #   
   #
-  # Returns:
+  # Returns: A dataframe whose columns are the activity code and activity name
   #   
   activities<-read.table(file.path(data.directory,base.file.name,"activity_labels.txt"))
   setnames(activities,names(activities),c("activity","ActivityName"))
@@ -56,11 +68,11 @@ read.dataset<-function(mode,features,data.directory="data",base.file.name="UCI H
   #
   # Args:
   #   mode: Specified which dataset to load, either "test" or "train"
+  #   features: List of measurements, used to label columns
   #   data.directory: The directory from which data will be loaded
   #   base.file.name: The directory into which the zipfile has been expanded
   #
-  # Returns:
-  #   Frame containing subjects, activities, measurements
+  # Returns: Data Frame containing subjects, activities, measurements
   
   # Error handling
   if(!file.exists(data.directory)) 
@@ -85,50 +97,68 @@ merge.training.test<-function(features){
   # Args:
   #   features: List of feature names
   #
-  # Returns: subject, Ys, meanurements
+  # Returns: Data Frame containing subjects, activities, measurements
   #   
-  all<-rbind(read.dataset("test",features),read.dataset("train",features))
+  rbind(read.dataset("test",features),read.dataset("train",features))
 }
 
-extract.means.sigma<-function(all){
-  # Extracts only the measurements on the mean and standard deviation for each measurement.
+extract.means.sigma<-function(data){
+  # Extract the measurements on the mean and standard deviation for each measurement.
   #
   # Args:
-  #   
+  #   data: Data frame of merged data
   #
   # Returns: Subject, activity, and the measurements names "....mean..." or "..std.."
   #
-  all_names<-names(all)
-  keeps<-grep("(subject)|(activity)|(.*((mean)|(std)).*)",all_names)
-  all[,keeps]
+  data_names<-names(data)
+  # we want the two columns 'subject' and 'activity' in addition to the measurments, so we'll
+  # build a logical vector of coumns we want to keep
+  keeps<-grep("(subject)|(activity)|(.*((mean)|(std)).*)",data_names)
+  data[keeps]
 }
 
-use.descriptive.activity.names<-function (extracted,activities) {
-  # 
+use.descriptive.activity.names<-function (data,activities) {
+  # This function replaces activity codes with activity names
   #
   # Args:
-  #   
+  #   data: Data frame with an activity code in the 1st column
+  #   activities: Data frame of activity codes and name
   #
-  # Returns:
+  # Returns: New data frame where activity code has been replaced by name
+  #          This will be sorted by subject and activity code
   #
-  result<-merge(extracted,activities,by=c("activity"))
-  seq<-order(result[,1],result[,2])
-  selector<-1:length(result)-1
-  selector[1]<-2
-  selector[2]=length(result)
-  result<-result[seq,selector]
+  result<-merge(data,activities,by=c("activity"))
+  
+  seq<-order(result[,1],result[,2])  # Allow result to be sorted
+  # At this stage each row contains activity number and name. We want to remove the activity code
+  # as it is redundant. There is also a duplicate subject number
   result$subject.1<-NULL
-  result
+  result$activity<-NULL
+  
+  # My experiments have also shown that the activity code is at the end,
+  # so we need to reorder columns.
+  # TODO: this is a hack. We should bas this on names. Howver, tempus fugit.
+  
+  selector <- 1:length(result)
+  selector[2] <- length(result)
+  selector[3] <- 2
+  selector[4] <- 3
+  
+  result[seq,selector]
 }
 
 
 calculate.one.average<-function(activity,subject,field,dataset) {
-  # 
+  # Calculate the average of one specified mesuarment for combination of user and subject
   #
   # Args:
+  #   activity:
+  #   subject:
+  #   field:
+  #   dataset:
   #   
   #
-  # Returns:
+  # Returns: One row data frame with activity,subject,field, and average
   #   
   average<-mean(dataset[dataset$subject==subject & dataset$activity==activity,field])
   cbind(activity,subject,field,average)
@@ -136,12 +166,15 @@ calculate.one.average<-function(activity,subject,field,dataset) {
 
 
 calculate.for.activities.in.subject<- function(subject,activities,field,dataset){
-  # 
+  # Calculate a bunch of averages for specified field and subject, one value for each activity
   #
   # Args:
+  #   activities:
+  #   subject:
+  #   field:
+  #   dataset:
   #   
-  #
-  # Returns:
+  # Returns: Data frame with one row for each activity containing activity, subject,field, and average
   #   
   result<-calculate.one.average(activities[1],subject,field,dataset)
   for (i in 2:length(activities))
@@ -151,12 +184,16 @@ calculate.for.activities.in.subject<- function(subject,activities,field,dataset)
 
 
 calculate.for.one.field<-function(subjects,activities,field,dataset){
-  # 
+  # Calculate a bunch of averages for specified field, one value for each activity and subject
   #
   # Args:
+  #   activities:
+  #   subject:
+  #   field:
+  #   dataset:
   #   
-  #
-  # Returns:
+  # Returns: Data frame with one row for each activity/subject combination
+  #          containing activity, subject,field, and average
   #   
   result<-calculate.for.activities.in.subject(subjects[1],activities,field,dataset)
   for (i in 2:length(subjects))
@@ -165,12 +202,13 @@ calculate.for.one.field<-function(subjects,activities,field,dataset){
 }
 
 create.dataset.with.averages<-function(dataset){
-  # 
+  # Calculate a bunch of averages, one value for each field, activity and subject
   #
   # Args:
-  #   
+  #   datset: 
   #
-  # Returns:
+  # Returns: Data frame with one row for each activity/subject/field combination
+  #          containing activity, subject,field, and average
   #
   fields<-names(dataset)
   fields<-fields[3:length(fields)]
@@ -187,14 +225,11 @@ create.dataset.with.averages<-function(dataset){
 
 # 
 #
-# Args:
+# Here is the main program at last!All the hard work is done by the functions above
 #   
-#
-# Returns:
 #   
 
-#3. Uses descriptive activity names to name the activities in the data set
-activities<-read.activities()
+
 
 #4. Appropriately labels the data set with descriptive variable names. 
 #5. From the data set in step 4, creates a second, independent tidy data set with the average of each variable
@@ -209,16 +244,18 @@ merged<-merge.training.test(features)
 #2. Extracts only the measurements on the mean and standard deviation for each measurement. 
 extracted<-extract.means.sigma(merged)
 
-#3. Uses descriptive activity names to name the activities in the data set
-#4. Appropriately labels the data set with descriptive variable names. 
-#activities<-read.activities()
-#dataset<-use.descriptive.activity.names(extracted,activities)
-
 
 #5. From the data set in step 4, creates a second, independent tidy data set with the average of each variable
 #   for each activity and each subject.
 
 averaged.dataset<-create.dataset.with.averages(extracted)
+
+#3. Uses descriptive activity names to name the activities in the data set
+activities<-read.activities()
+
+#4. Appropriately labels the data set with descriptive variable names. 
+#activities<-read.activities()
+#dataset<-use.descriptive.activity.names(extracted,activities)
 
 labelled.dataset<-use.descriptive.activity.names(averaged.dataset,activities)
 
